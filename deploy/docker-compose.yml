@@ -19,7 +19,7 @@ services:
 
   maxan-backend:
     build:
-      context: ..
+      context: .
       dockerfile: deploy/backend.Dockerfile
     container_name: maxan-backend
     environment:
@@ -35,7 +35,7 @@ services:
 
   maxan-frontend:
     build:
-      context: ..
+      context: .
       dockerfile: deploy/frontend.Dockerfile
     container_name: maxan-frontend
     depends_on:
