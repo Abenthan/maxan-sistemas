@@ -6,16 +6,18 @@ export default function Inicio() {
     <div className="w-full min-h-screen flex flex-col text-gray-900">
       {/* HERO */}
       <section
-        className="relative h-[90vh] flex items-center justify-center text-center"
+        className="relative h-[90vh] flex items-center text-left"
         style={{
           backgroundImage: "url('/images/Hero1.jpg')",
           backgroundSize: "cover",
           backgroundPosition: "center",
         }}
       >
-        <div className="absolute inset-0 bg-black/50"></div>
+        <div className="absolute inset-0 bg-black/50">
+        </div>
+        {/* Alinear contenido a la izquierda */}
 
-        <div className="relative z-10 max-w-3xl px-4">
+        <div className="relative z-10 max-w-3xl px-4 ">
           <h1 className="text-4xl md:text-6xl font-extrabold text-white leading-tight">
             Equipos al mejor precio,{" "}
             <span className="text-[#00B4D8]">servicios con la más alta calidad</span>
