@@ -1,0 +1,53 @@
+version: "3.9"
+
+services:
+  maxan-db:
+    image: mariadb:10.7
+    container_name: maxan-db
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: maxan_sistemas
+      MYSQL_USER: maxan
+      MYSQL_PASSWORD: maxan123
+    volumes:
+      - ../database:/docker-entrypoint-initdb.d
+      - mysql_data:/var/lib/mysql
+    networks:
+      - maxan_net
+    ports:
+      - "3307:3306"
+
+  maxan-backend:
+    build:
+      context: ..
+      dockerfile: deploy/backend.Dockerfile
+    container_name: maxan-backend
+    environment:
+      NODE_ENV: production
+    env_file:
+      - backend.env
+    depends_on:
+      - maxan-db
+    networks:
+      - maxan_net
+    ports:
+      - "5000:5000"
+
+  maxan-frontend:
+    build:
+      context: ..
+      dockerfile: deploy/frontend.Dockerfile
+    container_name: maxan-frontend
+    depends_on:
+      - maxan-backend
+    networks:
+      - maxan_net
+    ports:
+      - "4000:80"
+
+networks:
+  maxan_net:
+    external: true
+
+volumes:
+  mysql_data:

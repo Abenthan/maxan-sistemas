@@ -15,8 +15,6 @@ export default function Inicio() {
       >
         <div className="absolute inset-0 bg-black/50">
         </div>
-        {/* Alinear contenido a la izquierda */}
-
         <div className="relative z-10 max-w-3xl px-4 ">
           <h1 className="text-4xl md:text-6xl font-extrabold text-white leading-tight">
             Equipos al mejor precio,{" "}
