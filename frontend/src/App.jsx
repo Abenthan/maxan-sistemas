@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import ChatWidget from "./components/ChatWidget";
 import Inicio from "./pages/Inicio";
 import Servicios from "./pages/Servicios";
 import Tienda from "./pages/Tienda";
@@ -22,6 +23,7 @@ function App() {
           </Routes>
         </main>
         <Footer />
+        <ChatWidget />
       </div>
     </Router>
   );
