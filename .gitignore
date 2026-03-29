@@ -22,9 +22,6 @@ pnpm-debug.log*
 # Excepciones: permitir versiones de ejemplo
 !*.env.example
 
-# Env específicos de deploy
-deploy/backend.env
-
 ############################################################
 # 🔵 DOCKER
 ############################################################
@@ -38,14 +35,8 @@ deploy/backend.env
 docker-compose.override.yml
 
 ############################################################
-# 🔴 BACKEND Y FRONTEND (Node, React, Vite)
+# FRONTEND
 ############################################################
-
-# Backend
-backend/node_modules/
-backend/dist/
-backend/.env
-backend/*.log
 
 # Frontend
 frontend/node_modules/
@@ -68,3 +59,6 @@ temp/
 .vscode/
 .idea/
 *.swp
+
+server.md
+claude.md
