@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git -C /d/Desarrollos/maxanSistemas.com log -p --follow -20 -- backend/package.json)",
+      "Bash(git:*)"
+    ]
+  }
+}

@@ -1,64 +1,35 @@
-############################################################
-# 🟢 ARCHIVOS Y DIRECTORIOS GENERALES
-############################################################
-
+# Dependencias
 node_modules/
+
+# Build output (Vite)
 dist/
-build/
-.DS_Store
-Thumbs.db
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
 
-############################################################
-# 🟡 VARIABLES DE ENTORNO (NO SE DEBEN SUBIR)
-############################################################
-
-# Todos los .env
+# Variables de entorno
 *.env
-
-# Excepciones: permitir versiones de ejemplo
 !*.env.example
+*.env.local
+*.env.*.local
 
-############################################################
-# 🔵 DOCKER
-############################################################
-
-# Archivos generados automáticamente por Docker
-*.tar
-*.bak
-*.save
-
-# Cache de docker-compose
+# Docker
 docker-compose.override.yml
 
-############################################################
-# FRONTEND
-############################################################
+# Documentación interna del servidor
+SERVER.md
 
-# Frontend
-frontend/node_modules/
-frontend/dist/
-frontend/.env
-frontend/*.log
+# OS
+.DS_Store
+Thumbs.db
 
-############################################################
-# 🟣 SISTEMA / ARCHIVOS TEMPORALES
-############################################################
-
-.tmp/
-temp/
-*.tmp
-
-############################################################
-# ⚙️ EDITORES (VSCode, JetBrains, etc.)
-############################################################
-
+# Editores
 .vscode/
 .idea/
 *.swp
 
-server.md
-claude.md
+# Logs y temporales
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.tmp
+.tmp/
+temp/
