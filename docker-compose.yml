@@ -1,0 +1,7 @@
+services:
+  maxan-frontend:
+    build: .
+    container_name: maxan-frontend
+    restart: always
+    ports:
+      - "0.0.0.0:4000:80"
