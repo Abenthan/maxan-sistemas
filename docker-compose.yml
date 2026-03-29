@@ -1,6 +1,6 @@
 services:
   maxan-frontend:
-    build: .
+    build: ./frontend
     container_name: maxan-frontend
     restart: always
     ports:
