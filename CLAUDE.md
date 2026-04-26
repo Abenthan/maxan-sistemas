@@ -33,9 +33,18 @@ docker run -p 4000:80 maxan-frontend
 **Single-page application**: React Router is configured with a single catch-all route (`/*`) that renders `<Inicio />`. All other pages (`Servicios`, `Blog`, `Contacto`, `Tienda`) exist as components but are not wired into routing — the landing page (`Inicio.jsx`) is the entire user-facing site via in-page sections.
 
 **Routing structure** (`src/App.jsx`):
-- One route: `/*` → `<Inicio />`
+- `/*` → `<Inicio />` (landing page principal)
+- `/agenda` → `<Agenda />` (página de agendamiento de reuniones)
 - `<Navbar />` and `<Footer />` wrap all content
 - WhatsApp floating button hardcoded to `wa.me/573128919875`
+
+**Página /agenda** (`src/pages/Agenda.jsx`):
+Flujo de 2 pasos para agendar una Reunión Comercial de 30 min por Google Meet:
+1. **Paso 1 — Formulario de calificación**: Nombre, WhatsApp (selector de país + número), Email opcional, tipo de proyecto, descripción.
+2. **Paso 2 — Cal.com embed**: Widget inline de Cal.com (`maxansistemas/reunion-comercial`). Los datos del paso 1 se pre-llenan automáticamente vía `config` (name, email, notes) para que el usuario no los ingrese dos veces.
+3. **Paso 3 — Confirmación**: Botón de confirmación por WhatsApp (`wa.me/573128919875`).
+
+Selector de país en WhatsApp: 21 países, Colombia (+57) por defecto. Validación: Colombia requiere exactamente 10 dígitos.
 
 **Styling**: Tailwind CSS 4 with the `@tailwindcss/vite` plugin — no `tailwind.config.js` needed, configuration is zero-config via the plugin.
 
@@ -60,4 +69,4 @@ bash /var/www/PROYECTO/deploy.sh
 
 The production branch is **`master`**, not `main`.
 
-Server context: See `SERVER.md` for VPS details, Caddy configuration, subdomain table, and deploy script template.
+Server context: See the notion page: https://www.notion.so/SERVER-md-Configuraci-n-del-Servidor-Maxan-32b08b453ccf812985d0fc4ece7eecd8?source=copy_link for VPS details, Caddy configuration, subdomain table, and deploy script template.

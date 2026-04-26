@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import Inicio from "./pages/Inicio";
+import Agenda from "./pages/Agenda";
 
 function WhatsAppButton() {
   return (
@@ -26,6 +27,7 @@ function App() {
       <Navbar />
       <main>
         <Routes>
+          <Route path="/agenda" element={<Agenda />} />
           <Route path="/*" element={<Inicio />} />
         </Routes>
       </main>
