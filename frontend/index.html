@@ -1,18 +1,109 @@
 <!doctype html>
-<html lang="es">
+<html lang="es-CO">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/Logo-FAVICON.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
+    <link rel="alternate icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
     <title>Maxan Sistemas — Tecnología para PYMES colombianas</title>
-    <meta name="description" content="Construimos la tecnología que hace crecer tu empresa: soporte IT mensual, desarrollo de software y automatización para PYMES colombianas." />
-    <meta property="og:title" content="Maxan Sistemas" />
-    <meta property="og:description" content="Soporte IT mensual, desarrollo de software y automatización para PYMES." />
-    <meta property="og:url" content="https://maxansistemas.com" />
+    <meta
+      name="description"
+      content="Construimos la tecnología que hace crecer tu empresa: soporte IT mensual, desarrollo de software a la medida y automatización para PYMES colombianas."
+    />
+    <link rel="canonical" href="https://maxansistemas.com/" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <meta name="theme-color" content="#0c2c59" />
+
+    <!-- Open Graph / Twitter -->
     <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Maxan Sistemas" />
+    <meta property="og:locale" content="es_CO" />
+    <meta property="og:title" content="Maxan Sistemas — Tecnología para PYMES colombianas" />
+    <meta
+      property="og:description"
+      content="Soporte IT mensual, desarrollo de software a la medida y automatización para PYMES colombianas."
+    />
+    <meta property="og:url" content="https://maxansistemas.com/" />
+    <meta property="og:image" content="https://maxansistemas.com/images/og-maxan.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Maxan Sistemas — tecnología para PYMES colombianas" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Maxan Sistemas — Tecnología para PYMES colombianas" />
+    <meta
+      name="twitter:description"
+      content="Soporte IT mensual, desarrollo de software a la medida y automatización para PYMES colombianas."
+    />
+    <meta name="twitter:image" content="https://maxansistemas.com/images/og-maxan.jpg" />
+
+    <!-- Tipografía oficial: DM Sans (única familia de marca) -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700;9..40,800&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- La imagen del hero es el recurso LCP: se precarga -->
+    <link
+      rel="preload"
+      as="image"
+      href="/images/Hero1.webp"
+      imagesrcset="/images/Hero1-960.webp 960w, /images/Hero1.webp 1600w"
+      imagesizes="100vw"
+      fetchpriority="high"
+    />
+
+    <!-- Datos estructurados de la organización -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Organization",
+            "@id": "https://maxansistemas.com/#organizacion",
+            "name": "Maxan Sistemas",
+            "url": "https://maxansistemas.com/",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "https://maxansistemas.com/images/logo-maxan.png",
+              "width": 500,
+              "height": 132
+            },
+            "image": "https://maxansistemas.com/images/og-maxan.jpg",
+            "email": "hola@maxansistemas.com",
+            "telephone": "+57 313 485 0115",
+            "areaServed": { "@type": "Country", "name": "Colombia" },
+            "address": {
+              "@type": "PostalAddress",
+              "addressCountry": "CO"
+            },
+            "contactPoint": [
+              {
+                "@type": "ContactPoint",
+                "telephone": "+57 313 485 0115",
+                "contactType": "customer service",
+                "areaServed": "CO",
+                "availableLanguage": ["es"]
+              }
+            ]
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://maxansistemas.com/#website",
+            "url": "https://maxansistemas.com/",
+            "name": "Maxan Sistemas",
+            "inLanguage": "es-CO",
+            "publisher": { "@id": "https://maxansistemas.com/#organizacion" }
+          }
+        ]
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
@@ -20,22 +111,33 @@
     <!-- Cal.com embed script -->
     <script type="text/javascript">
       (function (C, A, L) {
-        let p = function (a, ar) { a.q.push(ar); };
+        let p = function (a, ar) {
+          a.q.push(ar);
+        };
         let d = C.document;
         C.Cal = C.Cal || function () {
-          let cal = C.Cal; let ar = arguments;
+          let cal = C.Cal;
+          let ar = arguments;
           if (!cal.loaded) {
-            cal.ns = {}; cal.q = cal.q || [];
+            cal.ns = {};
+            cal.q = cal.q || [];
             d.head.appendChild(d.createElement("script")).src = A;
             cal.loaded = true;
           }
           if (ar[0] === L) {
-            const api = function () { p(api, arguments); };
-            const namespace = ar[1]; api.q = api.q || [];
+            const api = function () {
+              p(api, arguments);
+            };
+            const namespace = ar[1];
+            api.q = api.q || [];
             if (typeof namespace === "string") {
               cal.ns[namespace] = cal.ns[namespace] || api;
-              p(cal.ns[namespace], ar); p(cal, ["-ready", namespace]);
-            } else { p(cal, ar); p(cal, ["-ready"]); }
+              p(cal.ns[namespace], ar);
+              p(cal, ["-ready", namespace]);
+            } else {
+              p(cal, ar);
+              p(cal, ["-ready"]);
+            }
             return;
           }
           p(cal, ar);

@@ -13,6 +13,9 @@ module.exports = {
   plugins: ['react-refresh'],
   rules: {
     'react/jsx-no-target-blank': 'off',
+    // El proyecto es JavaScript (sin TypeScript): los PropTypes no aportan valor
+    // y la regla genera ruido. Si se migra a TS, eliminar esta línea.
+    'react/prop-types': 'off',
     'react-refresh/only-export-components': [
       'warn',
       { allowConstantExport: true },

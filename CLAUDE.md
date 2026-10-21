@@ -4,7 +4,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Corporate website for Maxan Sistemas (Colombian IT services company). Currently a frontend-only React SPA — the backend (Node.js/Express/MySQL) was removed. The contact form at `/api/contact` has no active backend.
+Corporate website for Maxan Sistemas (Colombian IT services company). **Frontend-only React SPA** — the Node.js/Express/MySQL backend was removed and there is no active backend. The contact form validates in the browser and opens WhatsApp with the message pre-filled.
+
+## Documentation to read first
+
+1. `../diseño.md` — **source of truth for the shared design system** of the whole Maxan ecosystem (palette, tokens, typography, components, accessibility).
+2. `AGENTS.md` (this folder) — project context, conventions, pending work.
+3. `../README.md` — map of the ecosystem and how this project relates to the others.
 
 ## Development Commands
 
@@ -12,61 +18,60 @@ All commands run from the `frontend/` directory:
 
 ```bash
 npm install        # Install dependencies
-npm run dev        # Vite dev server → http://localhost:5173
+npm run dev        # Vite dev server → http://localhost:5176
 npm run build      # Production build → dist/
 npm run preview    # Preview production build locally
 npm run lint       # ESLint (0 warnings allowed, will error on warnings)
 ```
 
-No test suite is configured.
+No test suite is configured. `npm run lint` and `npm run build` are the verification gate.
+
+## Architecture
+
+**Stack**: React 18.3 + Vite 5 + Tailwind 4 (`@tailwindcss/vite`, zero-config, no `tailwind.config.js`) + react-router-dom 7 + lucide-react. `@n8n/chat` is installed but **not mounted** in `src/`.
+
+**Routing** (`src/App.jsx`):
+
+| Route | Page |
+|---|---|
+| `/` | `pages/Inicio.jsx` |
+| `/servicios` | `pages/Servicios.jsx` |
+| `/software-a-la-medida` | `pages/SoftwareMedida.jsx` |
+| `/contacto` | `pages/Contacto.jsx` |
+| `/agenda` | `pages/Agenda.jsx` |
+| `*` | `pages/NoEncontrada.jsx` |
+
+`<Navbar />` and `<Footer />` wrap all routes; `App.jsx` also renders the skip link (`#contenido`), a `ScrollManager` (resets scroll, honours `#hash` anchors) and the floating WhatsApp button.
+
+**Design tokens**: `src/index.css` — Tailwind v4 `@theme` block with the `--maxan-*` palette (navy `#0c2c59`, primary `#2563eb`, neutrals, semantic states, WhatsApp channel), radii, shadows and shared component classes (`.btn-*`, `.field-*`, `.card`, `.eyebrow`, `.section-title`, `.prose-body`, `.skip-link`). Never write literal colours in components.
+
+**Single source of truth for the phone number**: `src/lib/wa.js` (`WA_NUMBER = "573134850115"`, `WA_DISPLAY = "+57 313 485 0115"`, `WA_LINK`, `MAIL`, `waLink()`). Never hardcode the number in a component.
+
+**SEO**: `src/lib/seo.js` — `useSeo({ title, description, path, jsonLd })` updates the document head per route (canonical, Open Graph, Twitter) and injects JSON-LD. `public/robots.txt` and `public/sitemap.xml` are static.
+
+**Página `/agenda`** (`src/pages/Agenda.jsx`): 3-step flow (form → Cal.com inline widget `maxansistemas/reunion-comercial` → WhatsApp confirmation). Phone country selector with Colombia (+57) by default; Colombian numbers must be 10 digits. Step changes move focus to the step heading and announce themselves through an `aria-live` region.
+
+**Docker/Nginx** (`frontend/nginx.conf`): Nginx serves the Vite `dist/` directory, with SPA fallback (`try_files $uri $uri/ /index.html`), gzip, caching rules and security headers. The `/api/` proxy stays commented out while there is no backend.
 
 ## Docker
 
 ```bash
-# Build and run frontend container (Nginx on port 80)
-docker build -t maxan-frontend ./frontend
-docker run -p 4000:80 maxan-frontend
+# From the repository root
+docker compose up -d --build maxan-web-frontend
 ```
 
-## Architecture
-
-**Single-page application**: React Router is configured with a single catch-all route (`/*`) that renders `<Inicio />`. All other pages (`Servicios`, `Blog`, `Contacto`, `Tienda`) exist as components but are not wired into routing — the landing page (`Inicio.jsx`) is the entire user-facing site via in-page sections.
-
-**Routing structure** (`src/App.jsx`):
-- `/*` → `<Inicio />` (landing page principal)
-- `/agenda` → `<Agenda />` (página de agendamiento de reuniones)
-- `<Navbar />` and `<Footer />` wrap all content
-- WhatsApp floating button hardcoded to `wa.me/573128919875`
-
-**Página /agenda** (`src/pages/Agenda.jsx`):
-Flujo de 2 pasos para agendar una Reunión Comercial de 30 min por Google Meet:
-1. **Paso 1 — Formulario de calificación**: Nombre, WhatsApp (selector de país + número), Email opcional, tipo de proyecto, descripción.
-2. **Paso 2 — Cal.com embed**: Widget inline de Cal.com (`maxansistemas/reunion-comercial`). Los datos del paso 1 se pre-llenan automáticamente vía `config` (name, email, notes) para que el usuario no los ingrese dos veces.
-3. **Paso 3 — Confirmación**: Botón de confirmación por WhatsApp (`wa.me/573128919875`).
-
-Selector de país en WhatsApp: 21 países, Colombia (+57) por defecto. Validación: Colombia requiere exactamente 10 dígitos.
-
-**Styling**: Tailwind CSS 4 with the `@tailwindcss/vite` plugin — no `tailwind.config.js` needed, configuration is zero-config via the plugin.
-
-**Key dependencies**:
-- `@n8n/chat` — floating n8n chat widget embedded in the site
-- `lucide-react` — all icons
-- `react-router-dom` v7
-
-**Docker/Nginx** (`frontend/nginx.conf`): Nginx serves the Vite `dist/` directory and proxies `/api/` to `http://maxan-backend:5000/api/`. SPA fallback enabled via `try_files $uri /index.html`.
+The container is named **`maxan-web-frontend`** (not `maxan-frontend`, which belongs to the ERP on port 8084) and binds `127.0.0.1:4000:80`; public traffic arrives through Caddy.
 
 ## Deployment
 
-Production runs on an Ubuntu VPS with Caddy (SSL) → Docker containers. Primary domain: `maxansistemas.com` (frontend port 4000, backend port 5000).
+Production runs on an Ubuntu VPS (ARM64) with Caddy (SSL) → Docker containers. Domain: `maxansistemas.com` (frontend on 4000).
 
 ```bash
-# Local → push to master (not main)
-git push origin master
-
-# On server
-bash /var/www/PROYECTO/deploy.sh
+git push origin main
+# On the server (~/maxansistemas)
+git pull origin main && docker compose up -d --build maxan-web-frontend
 ```
 
-The production branch is **`master`**, not `main`.
+The production branch is **`main`**.
 
-Server context: See the notion page: https://www.notion.so/SERVER-md-Configuraci-n-del-Servidor-Maxan-32b08b453ccf812985d0fc4ece7eecd8?source=copy_link for VPS details, Caddy configuration, subdomain table, and deploy script template.
+Server context: see `../Servidor/Servidor_Maxan.md` (containers table, Caddy config, deploy commands).

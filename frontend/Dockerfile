@@ -1,16 +1,16 @@
 # ===============================
 # ETAPA 1: Build del frontend
 # ===============================
-FROM node:18-alpine AS build
+FROM node:20-alpine AS build
 
 # Directorio de trabajo
 WORKDIR /app
 
-# Copiamos dependencias
+# Copiamos dependencias (package-lock.json incluido: build reproducible)
 COPY package*.json ./
 
-# Instalamos dependencias
-RUN npm install
+# Instalamos dependencias exactas
+RUN npm ci
 
 # Copiamos el resto del frontend
 COPY . .
@@ -35,4 +35,3 @@ EXPOSE 80
 
 # Ejecutamos Nginx en primer plano
 CMD ["nginx", "-g", "daemon off;"]
-

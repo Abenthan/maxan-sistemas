@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Video, Clock, ChevronRight, CheckCircle, ChevronDown } from "lucide-react";
-
-const WA_NUMBER = "573128919875";
+import { waLink } from "../lib/wa";
+import { useSeo, ogImage } from "../lib/seo";
 
 const TIPOS_PROYECTO = [
   "Me interesa el chatbot",
@@ -36,22 +36,35 @@ const COUNTRIES = [
 ];
 
 const WaIcon = ({ className = "w-5 h-5" }) => (
-  <svg className={className} fill="currentColor" viewBox="0 0 24 24">
+  <svg
+    className={className}
+    fill="currentColor"
+    viewBox="0 0 24 24"
+    aria-hidden="true"
+    focusable="false"
+  >
     <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" />
     <path d="M12 0C5.374 0 0 5.373 0 12c0 2.124.554 4.122 1.526 5.859L0 24l6.336-1.49A11.94 11.94 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.894a9.88 9.88 0 01-5.017-1.363l-.36-.214-3.732.878.939-3.627-.235-.374A9.861 9.861 0 012.106 12C2.106 6.53 6.53 2.106 12 2.106c5.47 0 9.894 4.424 9.894 9.894 0 5.47-4.424 9.894-9.894 9.894z" />
   </svg>
 );
 
+const PASOS = [
+  { num: 1, titulo: "Tu información" },
+  { num: 2, titulo: "Elige tu horario" },
+];
+
 function MeetingHeader() {
   return (
-    <div className="flex flex-wrap items-center gap-3 mb-8 p-4 rounded-xl bg-[#161920] border border-[#c8a96e]/20">
+    <div className="flex flex-wrap items-center gap-3 mb-8 p-4 rounded-maxan-lg bg-maxan-navy border border-white/20">
       <div className="flex items-center gap-2">
-        <Video className="w-5 h-5 text-[#c8a96e]" />
-        <span className="font-semibold text-[#f0ede8]">Reunión Comercial · Maxan Sistemas</span>
+        <Video size={20} className="text-maxan-primary-ink" aria-hidden="true" />
+        <span className="font-semibold text-white">
+          Reunión Comercial · Maxan Sistemas
+        </span>
       </div>
-      <div className="flex items-center gap-4 text-sm text-[#f0ede8]/50 ml-auto">
+      <div className="flex items-center gap-4 text-sm text-white/80 ml-auto">
         <span className="flex items-center gap-1">
-          <Clock className="w-4 h-4" /> 30 min
+          <Clock size={16} aria-hidden="true" /> 30 min
         </span>
         <span>Google Meet</span>
       </div>
@@ -61,29 +74,38 @@ function MeetingHeader() {
 
 function ProgressBar({ step }) {
   return (
-    <div className="flex items-center gap-3 mb-8">
-      <div className={`flex items-center gap-2 text-sm font-medium ${step >= 1 ? "text-[#c8a96e]" : "text-[#f0ede8]/40"}`}>
-        <span
-          className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold border-2 ${
-            step >= 1 ? "bg-[#c8a96e] border-[#c8a96e] text-[#0d0f14]" : "border-[#f0ede8]/30 text-[#f0ede8]/40"
-          }`}
-        >
-          1
-        </span>
-        <span className="hidden sm:inline">Tu información</span>
-      </div>
-      <div className={`flex-1 h-px ${step >= 2 ? "bg-[#c8a96e]" : "bg-[#f0ede8]/15"}`} />
-      <div className={`flex items-center gap-2 text-sm font-medium ${step >= 2 ? "text-[#c8a96e]" : "text-[#f0ede8]/40"}`}>
-        <span
-          className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold border-2 ${
-            step >= 2 ? "bg-[#c8a96e] border-[#c8a96e] text-[#0d0f14]" : "border-[#f0ede8]/30 text-[#f0ede8]/40"
-          }`}
-        >
-          2
-        </span>
-        <span className="hidden sm:inline">Elige tu horario</span>
-      </div>
-    </div>
+    <ol className="flex items-center gap-3 mb-8" aria-label="Pasos de la reserva">
+      {PASOS.map((p, i) => (
+        <li key={p.num} className="flex items-center gap-3">
+          {i > 0 && (
+            <span
+              className={`flex-1 h-px w-8 sm:w-20 ${
+                step >= p.num ? "bg-maxan-primary" : "bg-white/25"
+              }`}
+              aria-hidden="true"
+            />
+          )}
+          <span
+            className={`flex items-center gap-2 text-sm font-medium ${
+              step >= p.num ? "text-maxan-primary-ink" : "text-white/60"
+            }`}
+            aria-current={step === p.num ? "step" : undefined}
+          >
+            <span
+              className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold border-2 ${
+                step >= p.num
+                  ? "bg-maxan-primary border-maxan-primary text-white"
+                  : "border-white/40 text-white/70"
+              }`}
+              aria-hidden="true"
+            >
+              {p.num}
+            </span>
+            <span className="hidden sm:inline">{p.titulo}</span>
+          </span>
+        </li>
+      ))}
+    </ol>
   );
 }
 
@@ -97,6 +119,8 @@ function FormularioCalificacion({ onSubmit }) {
     descripcion: "",
   });
   const [errors, setErrors] = useState({});
+  const primerErrorRef = useRef(null);
+  const formRef = useRef(null);
 
   const validate = () => {
     const e = {};
@@ -122,8 +146,9 @@ function FormularioCalificacion({ onSubmit }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     const errs = validate();
+    setErrors(errs);
     if (Object.keys(errs).length > 0) {
-      setErrors(errs);
+      window.requestAnimationFrame(() => primerErrorRef.current?.focus());
       return;
     }
     onSubmit({
@@ -132,42 +157,56 @@ function FormularioCalificacion({ onSubmit }) {
     });
   };
 
-  const inputBase =
-    "w-full bg-[#0d0f14] border rounded-lg px-4 py-3 text-[#f0ede8] placeholder-[#f0ede8]/25 focus:outline-none transition-colors";
   const inputClass = (field) =>
-    `${inputBase} ${errors[field] ? "border-red-500 focus:border-red-400" : "border-[#f0ede8]/15 focus:border-[#c8a96e]"}`;
+    `field-input bg-white/10 border-white/45 text-white placeholder:text-white/60 ${
+      errors[field] ? "border-maxan-danger-ink" : ""
+    }`;
 
-  const hasPhoneError = errors.phoneNumber;
+  const labelClass = "field-label text-white/80";
 
   return (
-    <form onSubmit={handleSubmit} noValidate className="space-y-5">
+    <form ref={formRef} onSubmit={handleSubmit} noValidate className="space-y-5">
       <div>
-        <label className="block text-sm font-medium text-[#f0ede8]/60 mb-1.5">
-          Nombre completo <span className="text-[#c8a96e]">*</span>
+        <label htmlFor="agenda-nombre" className={labelClass}>
+          Nombre completo <span aria-hidden="true">*</span>
         </label>
         <input
           type="text"
+          id="agenda-nombre"
           name="nombre"
           value={data.nombre}
           onChange={handleChange}
           placeholder="¿Cómo te llamamos?"
+          autoComplete="name"
+          required
+          aria-invalid={errors.nombre ? "true" : undefined}
+          aria-describedby={errors.nombre ? "agenda-error-nombre" : undefined}
+          ref={errors.nombre ? primerErrorRef : undefined}
           className={inputClass("nombre")}
         />
-        {errors.nombre && <p className="mt-1.5 text-xs text-red-400">{errors.nombre}</p>}
+        {errors.nombre && (
+          <p id="agenda-error-nombre" role="alert" className="field-error text-maxan-danger-ink">
+            {errors.nombre}
+          </p>
+        )}
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-[#f0ede8]/60 mb-1.5">
-          WhatsApp <span className="text-[#c8a96e]">*</span>
+        <label htmlFor="agenda-telefono" className={labelClass}>
+          WhatsApp <span aria-hidden="true">*</span>
         </label>
         <div className="flex gap-2">
           <div className="relative flex-shrink-0">
+            <label htmlFor="agenda-pais" className="sr-only">
+              País o prefijo del número de WhatsApp
+            </label>
             <select
+              id="agenda-pais"
               name="countryDial"
               value={data.countryDial}
               onChange={handleChange}
-              className={`appearance-none bg-[#0d0f14] border rounded-lg pl-3 pr-8 py-3 text-[#f0ede8] focus:outline-none transition-colors ${
-                hasPhoneError ? "border-red-500 focus:border-red-400" : "border-[#f0ede8]/15 focus:border-[#c8a96e]"
+              className={`appearance-none bg-white/10 border border-white/45 rounded-maxan-md pl-3 pr-8 py-3 text-white min-h-11 ${
+                errors.phoneNumber ? "border-maxan-danger-ink" : ""
               }`}
             >
               {COUNTRIES.map((c) => (
@@ -176,48 +215,70 @@ function FormularioCalificacion({ onSubmit }) {
                 </option>
               ))}
             </select>
-            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-[#f0ede8]/40 pointer-events-none" />
+            <ChevronDown
+              size={16}
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-white/80 pointer-events-none"
+              aria-hidden="true"
+            />
           </div>
           <input
             type="tel"
+            id="agenda-telefono"
             name="phoneNumber"
             value={data.phoneNumber}
             onChange={handleChange}
             placeholder="3001234567"
-            className={`flex-1 bg-[#0d0f14] border rounded-lg px-4 py-3 text-[#f0ede8] placeholder-[#f0ede8]/25 focus:outline-none transition-colors ${
-              hasPhoneError ? "border-red-500 focus:border-red-400" : "border-[#f0ede8]/15 focus:border-[#c8a96e]"
-            }`}
+            autoComplete="tel-national"
+            required
+            aria-invalid={errors.phoneNumber ? "true" : undefined}
+            aria-describedby={
+              errors.phoneNumber ? "agenda-error-telefono" : "agenda-hint-telefono"
+            }
+            ref={errors.phoneNumber ? primerErrorRef : undefined}
+            className={`flex-1 ${inputClass("phoneNumber")}`}
           />
         </div>
-        {hasPhoneError ? (
-          <p className="mt-1.5 text-xs text-red-400">{errors.phoneNumber}</p>
+        {errors.phoneNumber ? (
+          <p id="agenda-error-telefono" role="alert" className="field-error text-maxan-danger-ink">
+            {errors.phoneNumber}
+          </p>
         ) : (
-          <p className="mt-1.5 text-xs text-[#f0ede8]/25">Solo los dígitos, sin espacios ni guiones</p>
+          <p id="agenda-hint-telefono" className="field-hint text-white/70">
+            Solo los dígitos, sin espacios ni guiones
+          </p>
         )}
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-[#f0ede8]/60 mb-1.5">
-          Email <span className="text-[#f0ede8]/30 font-normal">(opcional)</span>
+        <label htmlFor="agenda-email" className={labelClass}>
+          Email{" "}
+          <span className="text-white/60 font-normal">(opcional)</span>
         </label>
         <input
           type="email"
+          id="agenda-email"
           name="email"
           value={data.email}
           onChange={handleChange}
           placeholder="tu@empresa.com"
+          autoComplete="email"
           className={inputClass("email")}
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-[#f0ede8]/60 mb-1.5">
-          ¿Qué necesitas? <span className="text-[#c8a96e]">*</span>
+        <label htmlFor="agenda-tipo" className={labelClass}>
+          ¿Qué necesitas? <span aria-hidden="true">*</span>
         </label>
         <select
+          id="agenda-tipo"
           name="tipo"
           value={data.tipo}
           onChange={handleChange}
+          required
+          aria-invalid={errors.tipo ? "true" : undefined}
+          aria-describedby={errors.tipo ? "agenda-error-tipo" : undefined}
+          ref={errors.tipo ? primerErrorRef : undefined}
           className={`${inputClass("tipo")} appearance-none`}
         >
           <option value="" disabled>
@@ -229,37 +290,52 @@ function FormularioCalificacion({ onSubmit }) {
             </option>
           ))}
         </select>
-        {errors.tipo && <p className="mt-1.5 text-xs text-red-400">{errors.tipo}</p>}
+        {errors.tipo && (
+          <p id="agenda-error-tipo" role="alert" className="field-error text-maxan-danger-ink">
+            {errors.tipo}
+          </p>
+        )}
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-[#f0ede8]/60 mb-1.5">
-          Cuéntanos más <span className="text-[#c8a96e]">*</span>
+        <label htmlFor="agenda-descripcion" className={labelClass}>
+          Cuéntanos más <span aria-hidden="true">*</span>
           <span
             className={`ml-2 font-normal text-xs ${
-              data.descripcion.length > 280 ? "text-amber-400" : "text-[#f0ede8]/25"
+              data.descripcion.length > 280 ? "text-amber-300" : "text-white/70"
             }`}
           >
             {data.descripcion.length}/300
           </span>
         </label>
         <textarea
+          id="agenda-descripcion"
           name="descripcion"
           value={data.descripcion}
           onChange={handleChange}
           maxLength={300}
           rows={4}
           placeholder="¿Qué proceso quieres mejorar o qué problema estás tratando de resolver?"
+          required
+          aria-invalid={errors.descripcion ? "true" : undefined}
+          aria-describedby={errors.descripcion ? "agenda-error-descripcion" : undefined}
+          ref={errors.descripcion ? primerErrorRef : undefined}
           className={`${inputClass("descripcion")} resize-none`}
         />
-        {errors.descripcion && <p className="mt-1.5 text-xs text-red-400">{errors.descripcion}</p>}
+        {errors.descripcion && (
+          <p
+            id="agenda-error-descripcion"
+            role="alert"
+            className="field-error text-maxan-danger-ink"
+          >
+            {errors.descripcion}
+          </p>
+        )}
       </div>
 
-      <button
-        type="submit"
-        className="w-full flex items-center justify-center gap-2 bg-[#c8a96e] hover:bg-[#b8955a] text-[#0d0f14] font-bold py-3.5 px-6 rounded-lg transition-colors mt-2"
-      >
-        Ver horarios disponibles <ChevronRight className="w-5 h-5" />
+      <button type="submit" className="btn btn-primary w-full">
+        Ver horarios disponibles
+        <ChevronRight size={18} aria-hidden="true" />
       </button>
     </form>
   );
@@ -306,36 +382,35 @@ function CalEmbed({ onBooked, formData }) {
     <div
       id="cal-booking-placeholder"
       style={{ width: "100%", minHeight: "600px" }}
-      className="rounded-xl overflow-hidden"
+      className="rounded-maxan-lg overflow-hidden bg-white"
     />
   );
 }
 
 function Confirmacion({ nombre }) {
-  const waMessage = encodeURIComponent(
+  const enlace = waLink(
     `Hola, acabo de agendar una reunión con Maxan Sistemas. Mi nombre es ${nombre}.`
   );
-  const waLink = `https://wa.me/${WA_NUMBER}?text=${waMessage}`;
 
   return (
     <div className="text-center py-10">
-      <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#c8a96e]/15 mb-6">
-        <CheckCircle className="w-9 h-9 text-[#c8a96e]" />
+      <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-maxan-primary/20 mb-6">
+        <CheckCircle size={36} className="text-maxan-primary-ink" aria-hidden="true" />
       </div>
-      <h2 className="text-2xl font-bold text-[#f0ede8] mb-2">
-        ¡Listo, {nombre}!
-      </h2>
-      <p className="text-lg font-semibold text-[#c8a96e] mb-4">Tu reunión está agendada.</p>
-      <p className="text-[#f0ede8]/50 text-sm max-w-xs mx-auto mb-8 leading-relaxed">
+      <h2 className="text-2xl font-bold text-white mb-2">¡Listo, {nombre}!</h2>
+      <p className="text-lg font-semibold text-maxan-primary-ink mb-4">
+        Tu reunión está agendada.
+      </p>
+      <p className="text-white/80 text-sm max-w-xs mx-auto mb-8 leading-relaxed">
         Recibirás el link de Google Meet por WhatsApp o email antes de la reunión.
       </p>
       <a
-        href={waLink}
+        href={enlace}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center gap-3 bg-[#25D366] hover:bg-[#20c05c] text-white font-bold py-3.5 px-6 rounded-lg transition-colors"
+        className="btn btn-whatsapp"
       >
-        <WaIcon className="w-5 h-5" />
+        <WaIcon />
         Confirmar por WhatsApp
       </a>
     </div>
@@ -345,6 +420,19 @@ function Confirmacion({ nombre }) {
 export default function Agenda() {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState(null);
+  const headingRef = useRef(null);
+
+  useSeo({
+    title: "Agenda una reunión comercial | Maxan Sistemas",
+    description:
+      "Reserva una reunión comercial de 30 minutos con Maxan Sistemas por Google Meet. Cuéntanos tu proyecto y elige el horario disponible.",
+    path: "/agenda",
+    image: ogImage("og-maxan-agenda.jpg"),
+  });
+
+  useEffect(() => {
+    headingRef.current?.focus();
+  }, [step]);
 
   const handleFormSubmit = (data) => {
     setFormData(data);
@@ -357,17 +445,37 @@ export default function Agenda() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
+  const pasoActual = step === 1 ? PASOS[0].titulo : step === 2 ? PASOS[1].titulo : "Confirmación";
+
   return (
-    <div className="min-h-screen bg-[#0d0f14] pt-24 pb-16 px-4">
-      <div className="max-w-xl mx-auto">
+    <div className="relative min-h-screen bg-maxan-navy-900 pt-24 pb-16 px-4 overflow-hidden">
+      <img
+        src="/images/hero-agenda.jpg"
+        alt=""
+        aria-hidden="true"
+        decoding="async"
+        className="absolute inset-0 h-full w-full object-cover object-[75%_center]"
+      />
+      <div className="absolute inset-0 bg-maxan-navy-900/85" />
+      <div className="relative z-10 max-w-xl mx-auto">
         <MeetingHeader />
 
         {step < 3 && <ProgressBar step={step} />}
 
+        <p aria-live="polite" className="sr-only">
+          {`Paso ${step} de 3: ${pasoActual}`}
+        </p>
+
         {step === 1 && (
           <>
-            <h1 className="text-2xl font-bold text-[#f0ede8] mb-2">Reserva tu reunión</h1>
-            <p className="text-[#f0ede8]/40 text-sm mb-8">
+            <h1
+              ref={headingRef}
+              tabIndex={-1}
+              className="text-2xl font-bold text-white mb-2 focus:outline-none"
+            >
+              Reserva tu reunión
+            </h1>
+            <p className="text-white/80 text-sm mb-8">
               Cuéntanos qué necesitas — elige el horario en el siguiente paso.
             </p>
             <FormularioCalificacion onSubmit={handleFormSubmit} />
@@ -376,15 +484,25 @@ export default function Agenda() {
 
         {step === 2 && (
           <>
-            <h2 className="text-xl font-bold text-[#f0ede8] mb-2">Elige tu horario</h2>
-            <p className="text-[#f0ede8]/40 text-sm mb-6">
+            <h2
+              ref={headingRef}
+              tabIndex={-1}
+              className="text-xl font-bold text-white mb-2 focus:outline-none"
+            >
+              Elige tu horario
+            </h2>
+            <p className="text-white/80 text-sm mb-6">
               Horarios en zona horaria Colombia (GMT-5).
             </p>
             <CalEmbed onBooked={handleBooked} formData={formData} />
           </>
         )}
 
-        {step === 3 && <Confirmacion nombre={formData?.nombre || "Tú"} />}
+        {step === 3 && (
+          <div ref={headingRef} tabIndex={-1} className="focus:outline-none">
+            <Confirmacion nombre={formData?.nombre || "tú"} />
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,7 +1,11 @@
 services:
-  maxan-frontend:
+  # El nombre del contenedor es global en Docker: el frontend del ERP ya usa
+  # `maxan-frontend` (puerto 8084), por eso la web corporativa usa
+  # `maxan-web-frontend`. Ver Servidor/Servidor_Maxan.md.
+  maxan-web-frontend:
     build: ./frontend
-    container_name: maxan-frontend
+    container_name: maxan-web-frontend
     restart: always
     ports:
-      - "0.0.0.0:4000:80"
+      # Solo escucha en loopback: el tráfico público entra por Caddy (HTTPS).
+      - "127.0.0.1:4000:80"
