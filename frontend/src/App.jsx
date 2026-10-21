@@ -3,6 +3,7 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import Inicio from "./pages/Inicio";
 import Agenda from "./pages/Agenda";
+import SoftwareMedida from "./pages/SoftwareMedida";
 
 function WhatsAppButton() {
   return (
@@ -27,6 +28,7 @@ function App() {
       <Navbar />
       <main>
         <Routes>
+          <Route path="/software-a-la-medida" element={<SoftwareMedida />} />
           <Route path="/agenda" element={<Agenda />} />
           <Route path="/*" element={<Inicio />} />
         </Routes>

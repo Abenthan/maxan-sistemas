@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Code2, Bot, Server, CheckCircle2, Layers, Package, SlidersHorizontal } from "lucide-react";
 
 const WA_LINK = "https://wa.me/573128919875";
@@ -92,6 +93,7 @@ export default function Inicio() {
                 icon: <Code2 size={28} className="text-[#2563EB]" />,
                 titulo: "Software hecho para tu negocio",
                 desc: "Aplicaciones web, sistemas de facturación, paneles administrativos, integraciones. Construimos lo que tu empresa necesita, no plantillas genéricas.",
+                link: "/software-a-la-medida",
               },
               {
                 icon: <Bot size={28} className="text-[#2563EB]" />,
@@ -110,9 +112,15 @@ export default function Inicio() {
                 </div>
                 <h3 className="text-xl font-bold text-[#0c2c59] mb-3">{s.titulo}</h3>
                 <p className="text-gray-500 leading-relaxed text-sm mb-6">{s.desc}</p>
-                <a href={WA_LINK} target="_blank" rel="noopener noreferrer" className="text-[#2563EB] text-sm font-semibold hover:underline">
-                  Conversemos →
-                </a>
+                {s.link ? (
+                  <Link to={s.link} className="text-[#2563EB] text-sm font-semibold hover:underline">
+                    Saber más →
+                  </Link>
+                ) : (
+                  <a href={WA_LINK} target="_blank" rel="noopener noreferrer" className="text-[#2563EB] text-sm font-semibold hover:underline">
+                    Conversemos →
+                  </a>
+                )}
               </div>
             ))}
           </div>
