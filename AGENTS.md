@@ -276,15 +276,11 @@ rutas o metadatos.
 
 ## Pendientes
 
-1. **Renombrar el contenedor en el servidor**: `maxan-frontend` (web, 4000) →
-   `maxan-web-frontend`; el ERP ya usa `maxan-frontend` (8084) y ambos no pueden
-   coexistir. Actualizar la tabla de `../Servidor/Servidor_Maxan.md` después del
-   deploy.
-2. **Imagen del portafolio** (chatbot hotelero): prompt en
+1. **Imagen del portafolio** (chatbot hotelero): prompt en
    `frontend/public/images/imagenes.md` §3.2; la card del home todavía es solo
    texto.
-3. Decidir si se monta el chat de `@n8n/chat` (dependencia instalada, sin uso).
-4. Navbar con login opcional (Fase 5 de `maxan-auth`).
+2. Decidir si se monta el chat de `@n8n/chat` (dependencia instalada, sin uso).
+3. Navbar con login opcional (Fase 5 de `maxan-auth`).
 
 ---
 
@@ -351,3 +347,10 @@ rutas o metadatos.
     `/software-a-la-medida` y `/agenda`, favicons cuadrados + ICO +
     `site.webmanifest`, y `og:image` por ruta vía `useSeo({ image })`.
     Verificado: lint 0/0, build OK, Lighthouse 100/100 en las 3 rutas tocadas.
+17. **Desplegado en producción** (commit `e868bbf`): `git pull` en
+    `~/maxansistemas` (se descartó el parche local de `container_name`, ya
+    superado por el rename del repo), se eliminó el contenedor viejo
+    `maxanSistemas-frontend` y se levantó `maxan-web-frontend`
+    (`127.0.0.1:4000`). Verificado por HTTPS: 5 rutas 200, favicon/manifest,
+    las 4 tarjetas OG y los 3 heroes 200. Tabla de
+    `../Servidor/Servidor_Maxan.md` actualizada.
