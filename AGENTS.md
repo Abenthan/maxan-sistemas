@@ -372,4 +372,7 @@ rutas o metadatos.
     `NoEncontrada` lo usa. Verificado: lint 0/0, build OK (JS 246,11 kB / gzip
     73,93 kB; CSS 32,13 kB / 6,35 kB), `curl` `/ruta-inexistente` → 404, 5 rutas
     → 200, 404 renderizada con `noindex` y sin canonical, Lighthouse SEO 100 en
-    `/` y `/servicios` (local).
+    `/` y `/servicios` (local). **Desplegado en producción el 2026-11-06**
+    (commits `1cb52c6` de WP-10 y `840e49c` de WP-13); verificado por HTTPS:
+    `/ruta-inexistente` → 404 con body de la SPA, 5 rutas → 200, 404 con
+    `noindex` y Lighthouse SEO 100 en `/` y `/servicios`.
