@@ -32,6 +32,12 @@ function setCanonical(url) {
   el.setAttribute("href", url);
 }
 
+function removeCanonical() {
+  document
+    .querySelectorAll('link[rel="canonical"]')
+    .forEach((el) => el.remove());
+}
+
 /**
  * Metadatos por ruta (SPA): title, description, canonical, Open Graph,
  * Twitter Card y JSON-LD específico de la página.
@@ -42,6 +48,8 @@ function setCanonical(url) {
  * @param {string} [options.path]      ruta con prefijo "/", p. ej. "/servicios"
  * @param {string} [options.image]     URL absoluta de la imagen social
  * @param {Array}  [options.jsonLd]    objetos schema.org de la página
+ * @param {boolean} [options.noindex]  true en páginas que no deben indexarse (404):
+ *                                     emite `noindex` y no genera canonical
  */
 export function useSeo({
   title = DEFAULT_TITLE,
@@ -49,6 +57,7 @@ export function useSeo({
   path = "/",
   image = OG_IMAGE,
   jsonLd = [],
+  noindex = false,
 } = {}) {
   useEffect(() => {
     const url = `${SITE_URL}${path === "/" ? "" : path}`;
@@ -61,7 +70,7 @@ export function useSeo({
     });
     setMeta('meta[name="robots"]', {
       name: "robots",
-      content: "index, follow",
+      content: noindex ? "noindex" : "index, follow",
     });
     setMeta('meta[property="og:title"]', {
       property: "og:title",
@@ -90,7 +99,11 @@ export function useSeo({
       content: image,
     });
 
-    setCanonical(url);
+    if (noindex) {
+      removeCanonical();
+    } else {
+      setCanonical(url);
+    }
 
     document
       .querySelectorAll("script[data-seo-jsonld]")
@@ -103,7 +116,7 @@ export function useSeo({
       script.textContent = JSON.stringify(data);
       document.head.appendChild(script);
     });
-  }, [title, description, path, image, jsonLd]);
+  }, [title, description, path, image, jsonLd, noindex]);
 }
 
 /** Grafo de navegación entre las páginas internas del sitio. */

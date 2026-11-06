@@ -41,10 +41,12 @@ implementar UI, a11y o SEO):
 
 ## Estado actual
 
-Última revisión (2026-10-21): normalización de diseño, accesibilidad, SEO e
-infraestructura. Ver "Trabajo reciente" al final.
+Última revisión (2026-11-06): WP-13 (404 real en nginx, `noindex` en la 404).
+Ver "Trabajo reciente" al final.
 
 - SPA con **6 rutas reales** (antes era todo un `catch-all` a `Inicio`).
+- Rutas desconocidas devuelven **404 real** en nginx conservando el body de la
+  SPA; las 5 rutas públicas devuelven 200 y la 404 lleva `noindex` sin canonical.
 - Sistema de tokens `--maxan-*` en `frontend/src/index.css` (Tailwind v4 `@theme`).
 - Formulario de contacto **sin backend**: valida en cliente y abre WhatsApp con
   el mensaje redactado (antes hacía `POST /api/contact` inexistente).
@@ -105,7 +107,7 @@ maxanSistemas.com/
 ├── docker-compose.yml         servicio maxan-web-frontend → 127.0.0.1:4000
 └── frontend/
     ├── index.html             lang es-CO, canonical, OG/Twitter, JSON-LD estático
-    ├── nginx.conf             gzip, cabeceras de seguridad, caché, SPA fallback
+    ├── nginx.conf             gzip, cabeceras de seguridad, caché, 404 real + SPA
     ├── Dockerfile             node:20-alpine → npm ci → nginx:alpine
     ├── public/
     │   ├── robots.txt
@@ -158,6 +160,7 @@ Fuente: `../diseño.md`. Tokens en `frontend/src/index.css` (bloque `@theme`).
 --color-maxan-text-secondary:#475569; /* 7.58:1 */
 --color-maxan-text-muted:  #64748b;   /* 4.76:1 */
 --color-maxan-border:      #e2e8f0;
+--color-maxan-border-control:#7c8ba1; /* borde de controles (3.46:1 / 3.16:1) */
 --color-whatsapp:          #25d366;   /* canal, no marca */
 --color-whatsapp-ink:      #052e16;   /* texto sobre verde (6.38:1) */
 ```
@@ -168,6 +171,9 @@ Reglas que no se negocian:
 - Sobre navy, el azul de marca se sustituye por `--maxan-primary-ink`.
 - El botón de WhatsApp **nunca** lleva texto blanco (1.98:1): usa
   `--whatsapp-ink`.
+- Los bordes que identifican controles (`.field-input`, `.btn-secondary`,
+  `.btn-ghost`) usan `--maxan-border-control` (≥3:1); `border`/`border-strong`
+  quedan solo para decoración.
 - Tipografía: **DM Sans** (Inter quedó obsoleto; Playfair Display se eliminó).
 - Logo: `logo-maxan.png` / `logo.svg` sobre fondo claro y
   `logo-maxan-blanco.svg` sobre fondo oscuro. **Nunca** inverter con filtros CSS.
@@ -196,10 +202,12 @@ Para cambiar el número: editar ese archivo y nada más.
 
 ## SEO
 
-- `src/lib/seo.js` → `useSeo({ title, description, path, image, jsonLd })` por
-  página: actualiza `<title>`, `meta[name=description]`, `link[rel=canonical]`,
-  OG y Twitter, e inyecta JSON-LD. `ogImage("archivo.jpg")` devuelve la URL
-  absoluta.
+- `src/lib/seo.js` → `useSeo({ title, description, path, image, jsonLd, noindex })`
+  por página: actualiza `<title>`, `meta[name=description]`,
+  `link[rel=canonical]`, OG y Twitter, e inyecta JSON-LD.
+  `ogImage("archivo.jpg")` devuelve la URL absoluta.
+- `noindex: true` emite `<meta name="robots" content="noindex">` y **elimina** el
+  canonical. Se usa en `NoEncontrada.jsx`; nginx ya devuelve 404 para esa ruta.
 - `index.html` lleva JSON-LD estático de `Organization` + `WebSite`.
 - `public/robots.txt` y `public/sitemap.xml` (5 URLs) son estáticos.
 - Al añadir o quitar una ruta: actualizar `sitemap.xml`, el `Navbar` y el
@@ -255,7 +263,9 @@ git pull origin main && docker compose up -d --build maxan-web-frontend
 - `frontend/Dockerfile`: build `node:20-alpine` con `npm ci` → `nginx:alpine`.
 - `frontend/nginx.conf`: gzip, `X-Content-Type-Options`, `X-Frame-Options`,
   `Referrer-Policy`, `Permissions-Policy`, caché 1 año para `/assets/`,
-  `no-cache` para `index.html`, `robots.txt` y `sitemap.xml`, SPA fallback.
+  `no-cache` para `index.html`, `robots.txt` y `sitemap.xml`; rutas válidas con
+  200 y rutas desconocidas con **404 real** (`try_files ... =404` +
+  `error_page 404 =404 /index.html`), sin afectar assets ni imágenes.
 - Contexto del servidor: `../Servidor/Servidor_Maxan.md`.
 
 ---
@@ -354,3 +364,12 @@ rutas o metadatos.
     (`127.0.0.1:4000`). Verificado por HTTPS: 5 rutas 200, favicon/manifest,
     las 4 tarjetas OG y los 3 heroes 200. Tabla de
     `../Servidor/Servidor_Maxan.md` actualizada.
+18. **WP-13 (2026-11-06): 404 real + `noindex`.** `nginx.conf` sirve las rutas
+    válidas con 200 (incluida la barra final) y devuelve **404** con el body de
+    la SPA para rutas desconocidas, sin tocar `/assets/`, `/images/`, `/fonts/`,
+    `robots.txt` ni `sitemap.xml`. `useSeo` acepta `noindex` (emite
+    `<meta name="robots" content="noindex">` y elimina el canonical) y
+    `NoEncontrada` lo usa. Verificado: lint 0/0, build OK (JS 246,11 kB / gzip
+    73,93 kB; CSS 32,13 kB / 6,35 kB), `curl` `/ruta-inexistente` → 404, 5 rutas
+    → 200, 404 renderizada con `noindex` y sin canonical, Lighthouse SEO 100 en
+    `/` y `/servicios` (local).

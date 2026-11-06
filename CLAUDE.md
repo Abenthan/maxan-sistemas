@@ -47,11 +47,11 @@ No test suite is configured. `npm run lint` and `npm run build` are the verifica
 
 **Single source of truth for the phone number**: `src/lib/wa.js` (`WA_NUMBER = "573134850115"`, `WA_DISPLAY = "+57 313 485 0115"`, `WA_LINK`, `MAIL`, `waLink()`). Never hardcode the number in a component.
 
-**SEO**: `src/lib/seo.js` — `useSeo({ title, description, path, jsonLd })` updates the document head per route (canonical, Open Graph, Twitter) and injects JSON-LD. `public/robots.txt` and `public/sitemap.xml` are static.
+**SEO**: `src/lib/seo.js` — `useSeo({ title, description, path, jsonLd, noindex })` updates the document head per route (canonical, Open Graph, Twitter) and injects JSON-LD. `noindex: true` (used by the 404 page) emits `<meta name="robots" content="noindex">` and removes the canonical. `public/robots.txt` and `public/sitemap.xml` are static.
 
 **Página `/agenda`** (`src/pages/Agenda.jsx`): 3-step flow (form → Cal.com inline widget `maxansistemas/reunion-comercial` → WhatsApp confirmation). Phone country selector with Colombia (+57) by default; Colombian numbers must be 10 digits. Step changes move focus to the step heading and announce themselves through an `aria-live` region.
 
-**Docker/Nginx** (`frontend/nginx.conf`): Nginx serves the Vite `dist/` directory, with SPA fallback (`try_files $uri $uri/ /index.html`), gzip, caching rules and security headers. The `/api/` proxy stays commented out while there is no backend.
+**Docker/Nginx** (`frontend/nginx.conf`): Nginx serves the Vite `dist/` directory. Known routes (`/`, `/servicios`, `/software-a-la-medida`, `/contacto`, `/agenda`) return 200; unknown paths return a real **404** with the SPA body (`try_files $uri $uri/ =404` + `error_page 404 =404 /index.html`) without affecting assets, images or fonts. Includes gzip, caching rules and security headers. The `/api/` proxy stays commented out while there is no backend.
 
 ## Docker
 

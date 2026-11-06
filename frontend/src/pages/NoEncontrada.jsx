@@ -7,7 +7,7 @@ export default function NoEncontrada() {
     title: "Página no encontrada | Maxan Sistemas",
     description:
       "La página que buscas no existe o cambió de dirección. Vuelve al inicio de Maxan Sistemas o contáctanos por WhatsApp.",
-    path: "/404",
+    noindex: true,
   });
 
   return (
