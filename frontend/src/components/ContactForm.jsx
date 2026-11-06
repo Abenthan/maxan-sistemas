@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { MAIL, waLink } from "../lib/wa";
+import { MAIL, MAIL_LINK, waLink } from "../lib/wa";
 
 const WaIcon = ({ className = "w-5 h-5" }) => (
   <svg
@@ -22,7 +22,8 @@ export default function ContactForm({ tone = "light" }) {
   const [formData, setFormData] = useState({ nombre: "", empresa: "", mensaje: "" });
   const [errors, setErrors] = useState({});
   const [status, setStatus] = useState(null);
-  const primerErrorRef = useRef(null);
+  const [waHref, setWaHref] = useState("");
+  const formRef = useRef(null);
 
   const dark = tone === "dark";
 
@@ -48,7 +49,9 @@ export default function ContactForm({ tone = "light" }) {
 
     if (Object.keys(nextErrors).length > 0) {
       setStatus(null);
-      window.requestAnimationFrame(() => primerErrorRef.current?.focus());
+      window.requestAnimationFrame(() => {
+        formRef.current?.querySelector('[aria-invalid="true"]')?.focus();
+      });
       return;
     }
 
@@ -60,8 +63,18 @@ export default function ContactForm({ tone = "light" }) {
       .filter(Boolean)
       .join(" ");
 
-    window.open(waLink(mensaje), "_blank", "noopener");
-    setStatus("ok");
+    const href = waLink(mensaje);
+    setWaHref(href);
+
+    // Sin `noopener` en las features para poder detectar el bloqueo del
+    // navegador; se corta la referencia al opener justo después.
+    const ventana = window.open(href, "_blank");
+    if (ventana) {
+      ventana.opener = null;
+      setStatus("ok");
+    } else {
+      setStatus("blocked");
+    }
   };
 
   const labelClass = dark ? "field-label text-white/80" : "field-label text-maxan-text-secondary";
@@ -71,7 +84,7 @@ export default function ContactForm({ tone = "light" }) {
   const errorClass = dark ? "field-error text-maxan-danger-ink" : "field-error text-maxan-danger";
 
   return (
-    <form onSubmit={handleSubmit} noValidate className="space-y-5">
+    <form ref={formRef} onSubmit={handleSubmit} noValidate className="space-y-5">
       <div>
         <label htmlFor="contacto-nombre" className={labelClass}>
           Nombre
@@ -87,7 +100,6 @@ export default function ContactForm({ tone = "light" }) {
           placeholder="Tu nombre"
           aria-invalid={errors.nombre ? "true" : undefined}
           aria-describedby={errors.nombre ? "contacto-error-nombre" : undefined}
-          ref={errors.nombre ? primerErrorRef : undefined}
           className={inputClass}
         />
         {errors.nombre && (
@@ -130,7 +142,6 @@ export default function ContactForm({ tone = "light" }) {
           placeholder="Cuéntanos el reto o proyecto que tienes en mente…"
           aria-invalid={errors.mensaje ? "true" : undefined}
           aria-describedby={errors.mensaje ? "contacto-error-mensaje" : undefined}
-          ref={errors.mensaje ? primerErrorRef : undefined}
           className={`${inputClass} resize-none`}
         />
         {errors.mensaje && (
@@ -146,8 +157,33 @@ export default function ContactForm({ tone = "light" }) {
       </button>
 
       <p role="status" aria-live="polite" className={`text-sm min-h-5 ${dark ? "text-white/80" : "text-maxan-text-secondary"}`}>
-        {status === "ok" &&
-          `Abrimos WhatsApp con tu mensaje. Si no se abrió, escríbenos a ${MAIL}.`}
+        {status === "ok" && (
+          <>
+            Abrimos WhatsApp con tu mensaje. Si no se abrió, escríbenos a{" "}
+            <a href={MAIL_LINK} className="underline font-semibold">
+              {MAIL}
+            </a>
+            .
+          </>
+        )}
+        {status === "blocked" && (
+          <>
+            El navegador bloqueó la ventana de WhatsApp.{" "}
+            <a
+              href={waHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline font-semibold"
+            >
+              Abre el chat aquí
+            </a>{" "}
+            o escríbenos a{" "}
+            <a href={MAIL_LINK} className="underline font-semibold">
+              {MAIL}
+            </a>
+            .
+          </>
+        )}
       </p>
     </form>
   );

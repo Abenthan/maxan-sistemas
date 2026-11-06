@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Corporate website for Maxan Sistemas (Colombian IT services company). **Frontend-only React SPA** — the Node.js/Express/MySQL backend was removed and there is no active backend. The contact form validates in the browser and opens WhatsApp with the message pre-filled.
+Corporate website for Maxan Sistemas (Colombian IT services company). **Frontend-only React SPA** — the Node.js/Express/MySQL backend was removed and there is no active backend. The contact form validates in the browser and opens WhatsApp with the message pre-filled; if the browser blocks the popup it shows direct WhatsApp/email links instead of a false success.
 
 ## Documentation to read first
 
@@ -49,7 +49,7 @@ No test suite is configured. `npm run lint` and `npm run build` are the verifica
 
 **SEO**: `src/lib/seo.js` — `useSeo({ title, description, path, jsonLd, noindex })` updates the document head per route (canonical, Open Graph, Twitter) and injects JSON-LD. `noindex: true` (used by the 404 page) emits `<meta name="robots" content="noindex">` and removes the canonical. `public/robots.txt` and `public/sitemap.xml` are static.
 
-**Página `/agenda`** (`src/pages/Agenda.jsx`): 3-step flow (form → Cal.com inline widget `maxansistemas/reunion-comercial` → WhatsApp confirmation). Phone country selector with Colombia (+57) by default; Colombian numbers must be 10 digits. Step changes move focus to the step heading and announce themselves through an `aria-live` region.
+**Página `/agenda`** (`src/pages/Agenda.jsx`): 3-step flow (form → Cal.com inline widget `maxansistemas/reunion-comercial` → WhatsApp confirmation). Phone country selector with Colombia (+57) by default; Colombian numbers must be 10 digits; the optional email is validated when filled. Users can go back to step 1 with their data preserved and reset after confirming. Step changes move focus to the step heading and announce themselves through an `aria-live` region. The Cal.com embed shows a loading state and, after a 15 s timeout or init failure, an error panel with retry and a direct calendar link.
 
 **Docker/Nginx** (`frontend/nginx.conf`): Nginx serves the Vite `dist/` directory. Known routes (`/`, `/servicios`, `/software-a-la-medida`, `/contacto`, `/agenda`) return 200; unknown paths return a real **404** with the SPA body (`try_files $uri $uri/ =404` + `error_page 404 =404 /index.html`) without affecting assets, images or fonts. Includes gzip, caching rules and security headers. The `/api/` proxy stays commented out while there is no backend.
 

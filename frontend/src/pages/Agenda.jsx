@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Video, Clock, ChevronRight, CheckCircle, ChevronDown } from "lucide-react";
+import { Video, Clock, ChevronRight, ChevronLeft, CheckCircle, ChevronDown } from "lucide-react";
 import { waLink } from "../lib/wa";
 import { useSeo, ogImage } from "../lib/seo";
 
@@ -52,6 +52,19 @@ const PASOS = [
   { num: 1, titulo: "Tu información" },
   { num: 2, titulo: "Elige tu horario" },
 ];
+
+const CAL_LINK = "maxansistemas/reunion-comercial";
+const CAL_URL = `https://cal.com/${CAL_LINK}`;
+const CAL_TIMEOUT_MS = 15000;
+
+const DATOS_INICIALES = {
+  nombre: "",
+  countryDial: "+57",
+  phoneNumber: "",
+  email: "",
+  tipo: "",
+  descripcion: "",
+};
 
 function MeetingHeader() {
   return (
@@ -109,17 +122,12 @@ function ProgressBar({ step }) {
   );
 }
 
-function FormularioCalificacion({ onSubmit }) {
-  const [data, setData] = useState({
-    nombre: "",
-    countryDial: "+57",
-    phoneNumber: "",
-    email: "",
-    tipo: "",
-    descripcion: "",
-  });
+function FormularioCalificacion({ onSubmit, initialData }) {
+  const [data, setData] = useState(() => ({
+    ...DATOS_INICIALES,
+    ...(initialData || {}),
+  }));
   const [errors, setErrors] = useState({});
-  const primerErrorRef = useRef(null);
   const formRef = useRef(null);
 
   const validate = () => {
@@ -131,6 +139,10 @@ function FormularioCalificacion({ onSubmit }) {
       e.phoneNumber = "Ingresa solo los dígitos del número, sin espacios ni guiones.";
     } else if (data.countryDial === "+57" && data.phoneNumber.trim().length !== 10) {
       e.phoneNumber = "Para Colombia ingresa 10 dígitos. Ejemplo: 3001234567";
+    }
+    const email = (data.email || "").trim();
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      e.email = "Ingresa un email válido o déjalo vacío.";
     }
     if (!data.tipo) e.tipo = "Selecciona el tipo de proyecto.";
     if (!data.descripcion.trim()) e.descripcion = "La descripción es requerida.";
@@ -148,7 +160,9 @@ function FormularioCalificacion({ onSubmit }) {
     const errs = validate();
     setErrors(errs);
     if (Object.keys(errs).length > 0) {
-      window.requestAnimationFrame(() => primerErrorRef.current?.focus());
+      window.requestAnimationFrame(() => {
+        formRef.current?.querySelector('[aria-invalid="true"]')?.focus();
+      });
       return;
     }
     onSubmit({
@@ -181,7 +195,6 @@ function FormularioCalificacion({ onSubmit }) {
           required
           aria-invalid={errors.nombre ? "true" : undefined}
           aria-describedby={errors.nombre ? "agenda-error-nombre" : undefined}
-          ref={errors.nombre ? primerErrorRef : undefined}
           className={inputClass("nombre")}
         />
         {errors.nombre && (
@@ -234,7 +247,6 @@ function FormularioCalificacion({ onSubmit }) {
             aria-describedby={
               errors.phoneNumber ? "agenda-error-telefono" : "agenda-hint-telefono"
             }
-            ref={errors.phoneNumber ? primerErrorRef : undefined}
             className={`flex-1 ${inputClass("phoneNumber")}`}
           />
         </div>
@@ -262,8 +274,15 @@ function FormularioCalificacion({ onSubmit }) {
           onChange={handleChange}
           placeholder="tu@empresa.com"
           autoComplete="email"
+          aria-invalid={errors.email ? "true" : undefined}
+          aria-describedby={errors.email ? "agenda-error-email" : undefined}
           className={inputClass("email")}
         />
+        {errors.email && (
+          <p id="agenda-error-email" role="alert" className="field-error text-maxan-danger-ink">
+            {errors.email}
+          </p>
+        )}
       </div>
 
       <div>
@@ -278,7 +297,6 @@ function FormularioCalificacion({ onSubmit }) {
           required
           aria-invalid={errors.tipo ? "true" : undefined}
           aria-describedby={errors.tipo ? "agenda-error-tipo" : undefined}
-          ref={errors.tipo ? primerErrorRef : undefined}
           className={`${inputClass("tipo")} appearance-none`}
         >
           <option value="" disabled>
@@ -319,7 +337,6 @@ function FormularioCalificacion({ onSubmit }) {
           required
           aria-invalid={errors.descripcion ? "true" : undefined}
           aria-describedby={errors.descripcion ? "agenda-error-descripcion" : undefined}
-          ref={errors.descripcion ? primerErrorRef : undefined}
           className={`${inputClass("descripcion")} resize-none`}
         />
         {errors.descripcion && (
@@ -342,52 +359,145 @@ function FormularioCalificacion({ onSubmit }) {
 }
 
 function CalEmbed({ onBooked, formData }) {
+  const [status, setStatus] = useState("loading"); // loading | ready | error
+  const [attempt, setAttempt] = useState(0);
+  const wrapperRef = useRef(null);
+
   useEffect(() => {
-    const initCal = () => {
-      window.Cal("inline", {
-        elementOrSelector: "#cal-booking-placeholder",
-        calLink: "maxansistemas/reunion-comercial",
-        layout: "month_view",
-        config: {
-          name: formData?.nombre || "",
-          email: formData?.email || "",
-          notes: [
-            formData?.tipo ? `Tipo de proyecto: ${formData.tipo}` : "",
-            formData?.descripcion || "",
-          ]
-            .filter(Boolean)
-            .join("\n"),
-        },
-      });
-      window.Cal("on", {
-        action: "bookingSuccessful",
-        callback: () => onBooked(),
-      });
+    let cancelled = false;
+    let settled = false;
+    const wrapper = wrapperRef.current;
+
+    setStatus("loading");
+
+    const hasIframe = () => Boolean(wrapper?.querySelector("iframe"));
+
+    const markReady = () => {
+      if (cancelled || settled) return;
+      settled = true;
+      setStatus("ready");
     };
 
-    if (window.Cal) {
-      initCal();
-    } else {
-      const interval = setInterval(() => {
-        if (window.Cal) {
-          clearInterval(interval);
-          initCal();
-        }
-      }, 200);
-      return () => clearInterval(interval);
-    }
-  }, [onBooked, formData]);
+    const markError = () => {
+      if (cancelled || settled) return;
+      settled = true;
+      setStatus("error");
+    };
+
+    const initCal = () => {
+      try {
+        window.Cal("inline", {
+          elementOrSelector: "#cal-booking-placeholder",
+          calLink: CAL_LINK,
+          layout: "month_view",
+          config: {
+            name: formData?.nombre || "",
+            email: formData?.email || "",
+            notes: [
+              formData?.tipo ? `Tipo de proyecto: ${formData.tipo}` : "",
+              formData?.descripcion || "",
+            ]
+              .filter(Boolean)
+              .join("\n"),
+          },
+        });
+        window.Cal("on", {
+          action: "bookingSuccessful",
+          callback: () => onBooked(),
+        });
+      } catch {
+        markError();
+      }
+    };
+
+    if (window.Cal) initCal();
+
+    // La agenda está lista cuando Cal.com inyecta su iframe.
+    const observer = new MutationObserver(() => {
+      if (hasIframe()) markReady();
+    });
+    if (wrapper) observer.observe(wrapper, { childList: true, subtree: true });
+    if (hasIframe()) markReady();
+
+    // Si el script de Cal.com no carga, no dejar el contenedor en blanco.
+    const timeout = window.setTimeout(() => {
+      if (hasIframe()) markReady();
+      else markError();
+    }, CAL_TIMEOUT_MS);
+
+    return () => {
+      cancelled = true;
+      observer.disconnect();
+      window.clearTimeout(timeout);
+    };
+  }, [onBooked, formData, attempt]);
 
   return (
-    <div
-      id="cal-booking-placeholder"
-      style={{ width: "100%", minHeight: "600px" }}
-      className="rounded-maxan-lg overflow-hidden bg-white"
-    />
+    <div ref={wrapperRef}>
+      {status === "loading" && (
+        <p role="status" className="mb-3 text-sm text-white/80">
+          Cargando la agenda…
+        </p>
+      )}
+
+      {status === "error" && (
+        <div
+          role="alert"
+          className="rounded-maxan-lg border border-white/25 bg-white/10 p-6 text-white"
+        >
+          <p className="font-semibold mb-1">No pudimos cargar el calendario.</p>
+          <p className="text-sm text-white/80 mb-4">
+            Abre la agenda en una pestaña nueva o escríbenos por WhatsApp y te
+            ayudamos a reservar.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <a
+              href={CAL_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn btn-primary"
+            >
+              Abrir agenda
+            </a>
+            <button
+              type="button"
+              onClick={() => setAttempt((n) => n + 1)}
+              className="btn btn-light"
+            >
+              Reintentar
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div
+        className={`rounded-maxan-lg overflow-hidden ${
+          status === "error" ? "hidden" : "bg-white"
+        }`}
+      >
+        <div
+          id="cal-booking-placeholder"
+          style={{ width: "100%", minHeight: status === "ready" ? "600px" : "0px" }}
+        />
+      </div>
+
+      <p className="mt-4 text-sm text-white/80">
+        ¿Problemas con el calendario?{" "}
+        <a
+          href={CAL_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline font-semibold text-maxan-primary-ink"
+        >
+          Abre la agenda en una pestaña nueva
+        </a>
+        .
+      </p>
+    </div>
   );
 }
 
-function Confirmacion({ nombre }) {
+function Confirmacion({ nombre, onReset }) {
   const enlace = waLink(
     `Hola, acabo de agendar una reunión con Maxan Sistemas. Mi nombre es ${nombre}.`
   );
@@ -404,15 +514,20 @@ function Confirmacion({ nombre }) {
       <p className="text-white/80 text-sm max-w-xs mx-auto mb-8 leading-relaxed">
         Recibirás el link de Google Meet por WhatsApp o email antes de la reunión.
       </p>
-      <a
-        href={enlace}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="btn btn-whatsapp"
-      >
-        <WaIcon />
-        Confirmar por WhatsApp
-      </a>
+      <div className="flex flex-col sm:flex-row gap-3 justify-center">
+        <a
+          href={enlace}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="btn btn-whatsapp"
+        >
+          <WaIcon />
+          Confirmar por WhatsApp
+        </a>
+        <button type="button" onClick={onReset} className="btn btn-light">
+          Agendar otra reunión
+        </button>
+      </div>
     </div>
   );
 }
@@ -444,6 +559,17 @@ export default function Agenda() {
     setStep(3);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
+
+  const handleVolver = () => {
+    setStep(1);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleReiniciar = () => {
+    setFormData(null);
+    setStep(1);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const pasoActual = step === 1 ? PASOS[0].titulo : step === 2 ? PASOS[1].titulo : "Confirmación";
 
@@ -478,7 +604,10 @@ export default function Agenda() {
             <p className="text-white/80 text-sm mb-8">
               Cuéntanos qué necesitas — elige el horario en el siguiente paso.
             </p>
-            <FormularioCalificacion onSubmit={handleFormSubmit} />
+            <FormularioCalificacion
+              onSubmit={handleFormSubmit}
+              initialData={formData}
+            />
           </>
         )}
 
@@ -494,13 +623,24 @@ export default function Agenda() {
             <p className="text-white/80 text-sm mb-6">
               Horarios en zona horaria Colombia (GMT-5).
             </p>
+            <button
+              type="button"
+              onClick={handleVolver}
+              className="btn btn-light mb-6"
+            >
+              <ChevronLeft size={18} aria-hidden="true" />
+              Volver a mis datos
+            </button>
             <CalEmbed onBooked={handleBooked} formData={formData} />
           </>
         )}
 
         {step === 3 && (
           <div ref={headingRef} tabIndex={-1} className="focus:outline-none">
-            <Confirmacion nombre={formData?.nombre || "tú"} />
+            <Confirmacion
+              nombre={formData?.nombre || "tú"}
+              onReset={handleReiniciar}
+            />
           </div>
         )}
       </div>

@@ -41,15 +41,20 @@ implementar UI, a11y o SEO):
 
 ## Estado actual
 
-Última revisión (2026-11-06): WP-13 (404 real en nginx, `noindex` en la 404).
-Ver "Trabajo reciente" al final.
+Última revisión (2026-11-06): WP-13 (404 real en nginx, `noindex` en la 404) y
+WP-14 (formulario sin éxito falso y agenda robusta). Ver "Trabajo reciente".
 
 - SPA con **6 rutas reales** (antes era todo un `catch-all` a `Inicio`).
 - Rutas desconocidas devuelven **404 real** en nginx conservando el body de la
   SPA; las 5 rutas públicas devuelven 200 y la 404 lleva `noindex` sin canonical.
 - Sistema de tokens `--maxan-*` en `frontend/src/index.css` (Tailwind v4 `@theme`).
 - Formulario de contacto **sin backend**: valida en cliente y abre WhatsApp con
-  el mensaje redactado (antes hacía `POST /api/contact` inexistente).
+  el mensaje redactado (antes hacía `POST /api/contact` inexistente). Si el
+  navegador bloquea la ventana, muestra el enlace directo de WhatsApp y el email
+  en vez de dar un éxito falso.
+- `/agenda`: email opcional validado, se puede volver al paso 1 conservando los
+  datos y reiniciar tras confirmar; Cal.com muestra carga, error con reintento y
+  enlace directo (nunca queda un contenedor en blanco).
 - `/agenda` repintada de la identidad negro/dorado a navy + azul de marca.
 - SEO por ruta: canonical, OG, Twitter, JSON-LD, `robots.txt`, `sitemap.xml`.
 - Lighthouse **100 / 100** en accesibilidad y SEO en las 5 rutas públicas.
@@ -376,3 +381,14 @@ rutas o metadatos.
     (commits `1cb52c6` de WP-10 y `840e49c` de WP-13); verificado por HTTPS:
     `/ruta-inexistente` → 404 con body de la SPA, 5 rutas → 200, 404 con
     `noindex` y Lighthouse SEO 100 en `/` y `/servicios`.
+19. **WP-14 (2026-11-06): formularios y agenda.** `ContactForm` detecta el
+    bloqueo de `window.open` (se abre sin `noopener` en las features y se corta
+    `opener` después) y, si falla, ofrece enlace a WhatsApp y email en lugar de
+    un éxito falso; el foco va al primer `[aria-invalid]` del formulario (antes
+    todos los campos con error compartían la misma ref y ganaba el último).
+    `Agenda` valida el email opcional, permite volver al paso 1 conservando los
+    datos y reiniciar tras confirmar, y `CalEmbed` tiene carga, timeout de 15 s,
+    error con "Reintentar" y enlace directo a `cal.com`. Verificado con Chrome
+    headless/CDP (10 comprobaciones) y Lighthouse a11y/SEO 100 en `/agenda` y
+    `/contacto`; lint 0/0 y build OK (JS 249,18 kB / gzip 74,95 kB; CSS
+    32,39 kB / 6,38 kB).
