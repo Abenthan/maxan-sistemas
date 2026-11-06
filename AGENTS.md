@@ -389,6 +389,7 @@ rutas o metadatos.
     `Agenda` valida el email opcional, permite volver al paso 1 conservando los
     datos y reiniciar tras confirmar, y `CalEmbed` tiene carga, timeout de 15 s,
     error con "Reintentar" y enlace directo a `cal.com`. Verificado con Chrome
-    headless/CDP (10 comprobaciones) y Lighthouse a11y/SEO 100 en `/agenda` y
+    headless/CDP (11 comprobaciones) y Lighthouse a11y/SEO 100 en `/agenda` y
     `/contacto`; lint 0/0 y build OK (JS 249,18 kB / gzip 74,95 kB; CSS
-    32,39 kB / 6,38 kB).
+    32,39 kB / 6,38 kB). **Desplegado en producción el 2026-11-06** (commit
+    `ec4afa4`); las 11 comprobaciones CDP pasan por HTTPS.
